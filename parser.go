@@ -1,4 +1,4 @@
-package calculator
+package krang
 
 func Parse(tokens []Token) []Token {
 	var result []Token

@@ -1,8 +1,8 @@
-package calculator
+package krang
 
 import "log"
 
-func Evaluate(tokens []Token) int {
+func Process(tokens []Token) int {
 	var stack TokenStack
 
 	for _, t := range tokens {
@@ -28,5 +28,5 @@ func Eval(value string) int {
 	}
 
 	rpn := Parse(tokens)
-	return Evaluate(rpn)
+	return Process(rpn)
 }

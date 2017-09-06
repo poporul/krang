@@ -1,4 +1,4 @@
-package calculator
+package krang
 
 type TokenStack []Token
 
