@@ -1,10 +1,11 @@
 package main
 
 import (
-	"os"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strings"
+
 	"github.com/poporul/calculator"
 )
 

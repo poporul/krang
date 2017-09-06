@@ -1,9 +1,9 @@
 package calculator
 
 import (
+	"errors"
 	"fmt"
 	"math"
-	"errors"
 	"strconv"
 )
 
@@ -31,8 +31,8 @@ func NewNumber(number string) Number {
 }
 
 type Operator struct {
-	Value string
-	Precedence int
+	Value         string
+	Precedence    int
 	Associativity string
 }
 
@@ -63,8 +63,8 @@ func (o Operator) String() string {
 	return fmt.Sprintf("{%s}", o.Value)
 }
 
-type LeftBracket struct {}
-type RightBracket struct {}
+type LeftBracket struct{}
+type RightBracket struct{}
 
 type Token interface{}
 
@@ -82,9 +82,11 @@ func Tokenize(value string) ([]Token, error) {
 				lastNumber = ""
 			}
 
-			if c == ' ' { continue }
+			if c == ' ' {
+				continue
+			}
 
-			if c == '('  {
+			if c == '(' {
 				result = append(result, LeftBracket{})
 				continue
 			}

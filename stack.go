@@ -7,20 +7,20 @@ func (ts *TokenStack) Push(token Token) {
 }
 
 func (ts *TokenStack) Pop() Token {
-	if (len(*ts) == 0) {
+	if len(*ts) == 0 {
 		return nil
 	}
 
 	token := ts.Peek()
-	*ts = (*ts)[:len(*ts) - 1]
+	*ts = (*ts)[:len(*ts)-1]
 
 	return token
 }
 
 func (ts *TokenStack) Peek() Token {
-	if (len(*ts) == 0) {
+	if len(*ts) == 0 {
 		return nil
 	}
 
-	return (*ts)[len(*ts) - 1]
+	return (*ts)[len(*ts)-1]
 }

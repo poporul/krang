@@ -26,8 +26,12 @@ func Parse(tokens []Token) []Token {
 			for {
 				top := operators.Peek()
 
-				if top == nil { break }
-				if _, ok := top.(LeftBracket); ok { break }
+				if top == nil {
+					break
+				}
+				if _, ok := top.(LeftBracket); ok {
+					break
+				}
 
 				if top.(Operator).Gte(token) && token.Associativity == "left" {
 					result = append(result, operators.Pop())
