@@ -6,7 +6,7 @@ func Parse(tokens []Token) []Token {
 
 	for _, t := range tokens {
 		switch token := t.(type) {
-		case Number:
+		case *Value:
 			result = append(result, token)
 
 		case LeftBracket:
@@ -33,7 +33,7 @@ func Parse(tokens []Token) []Token {
 					break
 				}
 
-				if top.(Operator).Gte(token) && token.Associativity == "left" {
+				if top.(Operator).Precedence() >= token.Precedence() && token.Associativity() == Left {
 					result = append(result, operators.Pop())
 				} else {
 					break

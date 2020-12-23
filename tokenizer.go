@@ -2,110 +2,89 @@ package krang
 
 import (
 	"errors"
-	"fmt"
-	"math"
-	"strconv"
+	"sort"
 )
 
 var (
-	InvalidInputError = errors.New("Invalid input")
+	InvalidInputError = errors.New("invalid input")
 )
-
-var operators = map[string]Operator{
-	"^": Operator{"^", 4, "right"},
-	"*": Operator{"*", 3, "left"},
-	"×": Operator{"*", 3, "left"},
-	"/": Operator{"/", 3, "left"},
-	"÷": Operator{"/", 3, "left"},
-	"-": Operator{"-", 2, "left"},
-	"+": Operator{"+", 2, "left"},
-}
-
-type Number struct {
-	Value int
-}
-
-func NewNumber(number string) Number {
-	result, _ := strconv.Atoi(number)
-	return Number{result}
-}
-
-type Operator struct {
-	Value         string
-	Precedence    int
-	Associativity string
-}
-
-func (o Operator) Calculate(first, second Number) Number {
-	var result int
-
-	switch o.Value {
-	case "*":
-		result = first.Value * second.Value
-	case "/":
-		result = first.Value / second.Value
-	case "+":
-		result = first.Value + second.Value
-	case "-":
-		result = first.Value - second.Value
-	case "^":
-		result = int(math.Pow(float64(first.Value), float64(second.Value)))
-	}
-
-	return Number{result}
-}
-
-func (o Operator) Gte(right Operator) bool {
-	return o.Precedence >= right.Precedence
-}
-
-func (o Operator) String() string {
-	return fmt.Sprintf("{%s}", o.Value)
-}
 
 type LeftBracket struct{}
 type RightBracket struct{}
 
 type Token interface{}
 
-func Tokenize(value string) ([]Token, error) {
-	var lastNumber string
+
+func (g *Grammar) Tokenize(value string) ([]Token, error) {
 	var result []Token
 	var err error
-
-	for _, c := range value {
-		if c >= '0' && c <= '9' {
-			lastNumber = lastNumber + string(c)
-		} else {
-			if len(lastNumber) > 0 {
-				result = append(result, NewNumber(lastNumber))
-				lastNumber = ""
+	var token string
+	var isQuoted bool
+	addToken := func() {
+		if len(token) > 0 {
+			result = append(result, FromString(token))
+			token = ""
+		}
+	}
+	var ops []string
+	for k, _ := range g.Operators {
+		ops = append(ops, k)
+	}
+	//sort operator tokens so that && precedes &
+	sort.Slice(ops, func(i, j int) bool {
+		if len(ops[i]) != len(ops[j]) {
+			return len(ops[i]) > len(ops[j])
+		}
+		return ops[i] > ops[j]
+	})
+scan:
+	for pos := 0; pos<len(value); pos++ {
+		c := value[pos]
+		if isQuoted {
+			if c == '\'' {
+				isQuoted = false
+				addToken()
+				continue
 			}
-
+			token += string(c)
+		} else {
+			if c == '\'' {
+				addToken()
+				isQuoted = true
+				continue
+			}
 			if c == ' ' {
+				addToken()
 				continue
 			}
 
 			if c == '(' {
+				addToken()
 				result = append(result, LeftBracket{})
 				continue
 			}
 
 			if c == ')' {
+				addToken()
 				result = append(result, RightBracket{})
 				continue
 			}
-
-			if operator, ok := operators[string(c)]; ok {
-				result = append(result, operator)
-			} else {
-				err = InvalidInputError
+			for _, k := range ops {
+				op := g.Operators[k]
+				if pos+len(k) <=len(value) &&
+					k == value[pos:pos+len(k)] {
+					addToken()
+					result = append(result, op)
+					pos += len(k)-1
+					continue scan
+				}
 			}
+			token += string(c)
 		}
 	}
 
-	if len(lastNumber) > 0 {
-		result = append(result, NewNumber(lastNumber))
+	if len(token) > 0 {
+		result = append(result, FromString(token))
 	}
 
 	return result, err
